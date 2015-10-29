@@ -70,6 +70,7 @@ class SimpleConsumer(val host: String,
     disconnect()
   }
 
+  @throws[IOException]
   def close() {
     lock synchronized {
       disconnect()
@@ -77,6 +78,8 @@ class SimpleConsumer(val host: String,
     }
   }
   
+  @throws[IOException]
+  @throws[InterruptedException]
   private def sendRequest(request: RequestOrResponse): NetworkReceive = {
     lock synchronized {
       var response: NetworkReceive = null
@@ -107,11 +110,15 @@ class SimpleConsumer(val host: String,
     }
   }
 
+  @throws[IOException]
+  @throws[InterruptedException]
   def send(request: TopicMetadataRequest): TopicMetadataResponse = {
     val response = sendRequest(request)
     TopicMetadataResponse.readFrom(response.payload())
   }
 
+  @throws[IOException]
+  @throws[InterruptedException]
   def send(request: GroupMetadataRequest): GroupMetadataResponse = {
     val response = sendRequest(request)
     GroupMetadataResponse.readFrom(response.payload())
@@ -123,6 +130,8 @@ class SimpleConsumer(val host: String,
    *  @param request  specifies the topic name, topic partition, starting byte offset, maximum bytes to be fetched.
    *  @return a set of fetched messages
    */
+  @throws[IOException]
+  @throws[InterruptedException]
   def fetch(request: FetchRequest): FetchResponse = {
     var response: NetworkReceive = null
     val specificTimer = fetchRequestAndResponseStats.getFetchRequestAndResponseStats(host, port).requestTimer
@@ -146,6 +155,8 @@ class SimpleConsumer(val host: String,
    *  @param request a [[kafka.api.OffsetRequest]] object.
    *  @return a [[kafka.api.OffsetResponse]] object.
    */
+  @throws[IOException]
+  @throws[InterruptedException]
   def getOffsetsBefore(request: OffsetRequest) = OffsetResponse.readFrom(sendRequest(request).payload())
 
   /**
@@ -154,6 +165,8 @@ class SimpleConsumer(val host: String,
    * @param request a [[kafka.api.OffsetCommitRequest]] object.
    * @return a [[kafka.api.OffsetCommitResponse]] object.
    */
+  @throws[IOException]
+  @throws[InterruptedException]
   def commitOffsets(request: OffsetCommitRequest) = {
     // TODO: With KAFKA-1012, we have to first issue a ConsumerMetadataRequest and connect to the coordinator before
     // we can commit offsets.
@@ -166,6 +179,8 @@ class SimpleConsumer(val host: String,
    * @param request a [[kafka.api.OffsetFetchRequest]] object.
    * @return a [[kafka.api.OffsetFetchResponse]] object.
    */
+  @throws[IOException]
+  @throws[InterruptedException]
   def fetchOffsets(request: OffsetFetchRequest) = OffsetFetchResponse.readFrom(sendRequest(request).payload())
 
   private def getOrMakeConnection() {
@@ -181,6 +196,8 @@ class SimpleConsumer(val host: String,
    * @param consumerId Id of the consumer which could be a consumer client, SimpleConsumerShell or a follower broker.
    * @return Requested offset.
    */
+  @throws[IOException]
+  @throws[InterruptedException]
   def earliestOrLatestOffset(topicAndPartition: TopicAndPartition, earliestOrLatest: Long, consumerId: Int): Long = {
     val request = OffsetRequest(requestInfo = Map(topicAndPartition -> PartitionOffsetRequestInfo(earliestOrLatest, 1)),
                                 clientId = clientId,
